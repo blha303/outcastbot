@@ -1,10 +1,48 @@
 #!/usr/bin/env python3
 import discord
-import re
-from bs4 import BeautifulSoup as Soup
-import requests
+from io import BytesIO
 
 client = discord.Client()
+
+__help = "Usage: !cw <message id or link>:<trigger warning message>, ... - e.g !cw 12345:trigger 2, 67890:trigger 3. Link required if cwing message in another channel (including \"server/channel/message\" IDs)"
+
+async def cw(message, *args):
+    if args == ([''],):
+        try:
+            await message.author.send(__help)
+        except discord.Forbidden:
+            await message.channel.send(__help)
+        return
+
+    for msg,trigger in args:
+        if "/" in msg: # message link
+            guild_id, channel_id, msg_id = msg.split("/")
+            channel = await client.fetch_channel(channel_id)
+            try:
+                target_msg = await channel.fetch_message(msg_id)
+            except discord.NotFound:
+                yield f"{msg}:{trigger}", False, "Message not found"
+                continue
+            if not message.author.permissions_in(target_msg.channel).manage_messages:
+                yield f"{msg}:{trigger}", False, "No 'Manage Messages' permission in target channel"
+                continue
+        else:
+            try:
+                target_msg = await message.channel.fetch_message(msg)
+            except discord.NotFound:
+                yield f"{msg}:{trigger}", False, "Message not found"
+                continue
+        content = f"""Message from {target_msg.author.mention} has been marked with a trigger warning. Below content has CW: {trigger}
+||{target_msg.content}||"""
+        files = []
+        for a in target_msg.attachments:
+            f = await a.to_file()
+            if not a.is_spoiler():
+                f.filename = f"SPOILER_{f.filename}"
+            files.append(f)
+        await target_msg.channel.send(content=content, files=files)
+        await target_msg.delete()
+        yield f"{msg}:{trigger}", True, ""
 
 @client.event
 async def on_message(message):
@@ -13,6 +51,14 @@ async def on_message(message):
 
     if message.content.lower().startswith("hi outcast"):
         await message.channel.send("Hiya! I'm a work in progress, don't mind me.")
+
+    if message.content.lower().startswith("!cw"):
+        if message.author.permissions_in(message.channel).manage_messages:
+            async for req, status, reason in cw(message, *map(lambda n: n.strip().split(":"), message.content[4:].replace("https://discordapp.com/channels/","").split(","))):
+                if not status:
+                    await message.channel.send(f"!cw failed on {req}: {reason}")
+        else:
+            await message.channel.send("No 'Manage Messages' permission in target channel")
 
 @client.event
 async def on_ready():
