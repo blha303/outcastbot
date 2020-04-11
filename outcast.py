@@ -10,6 +10,17 @@ __emoji_help = """Usage:
 !emoji import <custom emoji to import> <another custom emoji> ... - emoji will be imported using the name from the other server
 !emoji image <name> - attach an image and specify the name to import. image must be smaller than 256kb"""
 
+def get_emoji_count(guild):
+    emojis = guild.emojis
+    normal = [e for e in emojis if not e.animated]
+    animated = [e for e in emojis if e.animated]
+    if not guild.premium_tier:
+        return "{0}/50 normal, {1}/50 animated".format(len(normal), len(animated))
+    elif guild.premium_tier in [1,2]:
+        return "{0}/{2} normal, {1}/{2} animated".format(len(normal), len(animated), 50+(guild.premium_tier*50))
+    else:
+        return "{0}/250 normal, {1}/250 animated".format(len(normal), len(animated))
+
 async def emoji(message):
     content = message.content[6:].strip()
     try:
@@ -37,8 +48,8 @@ async def emoji(message):
                 await message.channel.send("!emoji failed on {}: {}".format(emoji_inp[1:-1], e.text.split("\n")[1]))
                 continue
             out.append(str(emoji))
-        await message.channel.send(" ".join(out))
     elif cmd == "image":
+        out = []
         for arg,attachment in zip(args, message.attachments):
             img_bytes = await attachment.read()
             try:
@@ -46,7 +57,8 @@ async def emoji(message):
             except discord.errors.HTTPException as e:
                 await message.channel.send("!emoji failed on {}: {}".format(arg, e.text.split("\n")[1]))
                 continue
-            await message.channel.send(str(emoji))
+            out.append(str(emoji))
+        await message.channel.send(get_emoji_count(message.guild) + "\n" + " ".join(out))
 
 async def cw(message, *args):
     if args == ([''],):
