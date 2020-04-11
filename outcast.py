@@ -2,6 +2,7 @@
 import discord
 from io import BytesIO
 import aiohttp
+from subprocess import check_output
 
 client = discord.Client()
 
@@ -124,6 +125,7 @@ async def on_message(message):
 @client.event
 async def on_ready():
     print("Logged in as {} ({})".format(client.user.name, client.user.id))
+    await client.get_channel(697503616587792415).send("Back online. Last update: " + check_output("git log -1 --pretty=%B").strip())
     if client.user.bot:
         print(discord.utils.oauth_url(client.user.id, permissions=discord.Permissions(8)))
 
