@@ -104,7 +104,8 @@ async def on_message(message):
         return
 
     if message.content.lower().startswith("hi outcast"):
-        await message.channel.send("Hiya! I'm a work in progress, don't mind me.")
+        print(get_emoji_count(message.guild))
+        await message.channel.send("Hiya! I'm a work in progress, don't mind me. " + get_emoji_count(message.guild))
 
     if message.content.lower().startswith("!emoji"):
         if message.author.permissions_in(message.channel).manage_emojis:
