@@ -25,7 +25,14 @@ async def emoji(message):
             await message.channel.send(__emoji_help)
         return
     if cmd == "import":
-        print(args)
+        out = []
+        for emoji_inp in args:
+            shortname,emoji_id = emoji_inp[2:-1].split(":")
+            emoji_temp = client.get_emoji(emoji_id)
+            img_bytes = await emoji_temp.url.read()
+            emoji = await message.guild.create_custom_emoji(name=shortname, image=img_bytes, reason=f"Added by {message.author.name}#{message.author.discriminator}")
+            out.append(str(emoji))
+        await message.channel.send(" ".join(out))
     elif cmd == "image":
         for arg,attachment in zip(args, message.attachments):
             img_bytes = await attachment.read()
