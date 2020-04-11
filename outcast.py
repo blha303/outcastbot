@@ -27,7 +27,7 @@ async def emoji(message):
     if cmd == "import":
         print(args)
     elif cmd == "image":
-        with aiohttp.ClientSession() as session:
+        async with aiohttp.ClientSession() as session:
             img = message.attachments[0]["url"]
             async with session.get(img) as resp:
                 img_bytes = await resp.read()
