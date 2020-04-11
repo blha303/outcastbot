@@ -82,9 +82,7 @@ async def on_message(message):
 
     if message.content.lower().startswith("!emoji"):
         if message.author.permissions_in(message.channel).manage_emojis:
-            async for req, status, reason in emoji(message):
-                if not status:
-                    await message.channel.send(f"!emoji failed on {req}: {reason}")
+            await emoji(message)
         else:
             await message.channel.send("No 'Manage Emoji' permission")
 
