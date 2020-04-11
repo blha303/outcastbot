@@ -1,17 +1,45 @@
 #!/usr/bin/env python3
 import discord
 from io import BytesIO
+import aiohttp
 
 client = discord.Client()
 
-__help = "Usage: !cw <message id or link>:<trigger warning message>, ... - e.g !cw 12345:trigger 2, 67890:trigger 3. Link required if cwing message in another channel (including \"server/channel/message\" IDs)"
+__cw_help = "Usage: !cw <message id or link>:<trigger warning message>, ... - e.g !cw 12345:trigger 2, 67890:trigger 3. Link required if cwing message in another channel (including \"server/channel/message\" IDs)"
+__emoji_help = """Usage:
+!emoji import <custom emoji to import> <another custom emoji> ... - emoji will be imported using the name from the other server
+!emoji image <name> - attach an image and specify the name to import. image must be smaller than 256kb"""
+
+async def emoji(message):
+    content = message.content[6:].strip()
+    try:
+        cmd, *args = content.split()
+        if cmd not in ["import", "image"]:
+            content = None
+    except ValueError:
+        content = None
+    if not content:
+        try:
+            await message.author.send(__emoji_help)
+        except discord.Forbidden:
+            await message.channel.send(__emoji_help)
+        return
+    if cmd == "import":
+        print(args)
+    elif cmd == "image":
+        with aiohttp.ClientSession() as session:
+            img = message.attachments[0]["url"]
+            async with session.get(img) as resp:
+                img_bytes = await resp.read()
+        emoji = await message.server.create_custom_emoji(name=shortname, image=img_bytes, reason=f"Added by {message.author.name}#{message.author.discriminator}")
+        await message.channel.send(str(emoji))
 
 async def cw(message, *args):
     if args == ([''],):
         try:
-            await message.author.send(__help)
+            await message.author.send(__cw_help)
         except discord.Forbidden:
-            await message.channel.send(__help)
+            await message.channel.send(__cw_help)
         return
 
     for msg,trigger in args:
@@ -51,6 +79,14 @@ async def on_message(message):
 
     if message.content.lower().startswith("hi outcast"):
         await message.channel.send("Hiya! I'm a work in progress, don't mind me.")
+
+    if message.content.lower().startswith("!emoji"):
+        if message.author.permissions_in(message.channel).manage_emojis:
+            async for req, status, reason in emoji(message):
+                if not status:
+                    await message.channel.send(f"!emoji failed on {req}: {reason}")
+        else:
+            await message.channel.send("No 'Manage Emoji' permission")
 
     if message.content.lower().startswith("!cw"):
         if message.author.permissions_in(message.channel).manage_messages:
