@@ -109,6 +109,10 @@ async def on_message(message):
         print(get_emoji_count(message.guild))
         await message.channel.send("Hiya! I'm a work in progress, don't mind me. " + get_emoji_count(message.guild))
 
+    if message.content.lower().startswith("!boop") and message.author.permissions_in(message.channel).administrator:
+        await message.channel.send("I've been booped! Back shortly...")
+        await client.logout()
+
     if message.content.lower().startswith("!emoji"):
         if message.author.permissions_in(message.channel).manage_emojis:
             await emoji(message)
