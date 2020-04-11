@@ -27,12 +27,9 @@ async def emoji(message):
     if cmd == "import":
         out = []
         for emoji_inp in args:
-            try:
-                shortname,emoji_id = emoji_inp[2:-1].split(":")
-            except ValueError:
-                print(emoji_inp)
+            animated,shortname,emoji_id = emoji_inp[1:-1].split(":")
             async with aiohttp.ClientSession() as session:
-                async with session.get(f"https://cdn.discordapp.com/emojis/{emoji_id}.png") as resp:
+                async with session.get(f"https://cdn.discordapp.com/emojis/{emoji_id}." + ("gif" if animated else "png")) as resp:
                     img_bytes = await resp.read()
             emoji = await message.guild.create_custom_emoji(name=shortname, image=img_bytes, reason=f"Added by {message.author.name}#{message.author.discriminator}")
             out.append(str(emoji))
