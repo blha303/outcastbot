@@ -28,7 +28,7 @@ async def emoji(message):
         print(args)
     elif cmd == "image":
         img_bytes = await message.attachments[0].read()
-        emoji = await message.server.create_custom_emoji(name=shortname, image=img_bytes, reason=f"Added by {message.author.name}#{message.author.discriminator}")
+        emoji = await message.guild.create_custom_emoji(name=shortname, image=img_bytes, reason=f"Added by {message.author.name}#{message.author.discriminator}")
         await message.channel.send(str(emoji))
 
 async def cw(message, *args):
