@@ -28,8 +28,9 @@ async def emoji(message):
         out = []
         for emoji_inp in args:
             shortname,emoji_id = emoji_inp[2:-1].split(":")
-            emoji_temp = discord.PartialEmoji(name=shortname, id=emoji_id)
-            img_bytes = await emoji_temp.url.read()
+            async with aiohttp.ClientSession() as session:
+                async with session.get(f"https://cdn.discordapp.com/emojis/{emoji_id}.png") as resp:
+                    img_bytes = await resp.read()
             emoji = await message.guild.create_custom_emoji(name=shortname, image=img_bytes, reason=f"Added by {message.author.name}#{message.author.discriminator}")
             out.append(str(emoji))
         await message.channel.send(" ".join(out))
