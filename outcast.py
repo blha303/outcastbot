@@ -27,7 +27,10 @@ async def emoji(message):
     if cmd == "import":
         out = []
         for emoji_inp in args:
-            shortname,emoji_id = emoji_inp[2:-1].split(":")
+            try:
+                shortname,emoji_id = emoji_inp[2:-1].split(":")
+            except ValueError:
+                print(emoji_inp)
             async with aiohttp.ClientSession() as session:
                 async with session.get(f"https://cdn.discordapp.com/emojis/{emoji_id}.png") as resp:
                     img_bytes = await resp.read()
