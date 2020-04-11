@@ -109,7 +109,7 @@ async def on_message(message):
         await message.delete(delay=60*60*24)
 
     if message.content.lower().startswith("!clearvoid") and message.author.permissions_in(message.channel).manage_messages:
-        channel = client.fetch_channel("698190568882307092")
+        channel = await client.fetch_channel("698190568882307092")
         async for msg in channel.history(limit=None):
             await msg.delete()
         await message.channel.send("void cleared")
