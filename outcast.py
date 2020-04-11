@@ -49,6 +49,7 @@ async def emoji(message):
                 await message.channel.send("!emoji failed on {}: {}".format(emoji_inp[1:-1], e.text.split("\n")[1]))
                 continue
             out.append(str(emoji))
+        await message.channel.send(get_emoji_count(message.guild) + "\n" + " ".join(out))
     elif cmd == "image":
         out = []
         for arg,attachment in zip(args, message.attachments):
