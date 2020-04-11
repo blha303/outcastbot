@@ -105,6 +105,15 @@ async def on_message(message):
     if message.author == client.user:
         return
 
+    if message.channel.id == "698190568882307092": # cw-void
+        await message.delete(delay=60*60*24)
+
+    if message.content.lower().startswith("!clearvoid") and message.author.permissions_in(message.channel).manage_messages:
+        channel = message.guild.get_channel("698190568882307092")
+        async for msg in channel.history(limit=None):
+            await msg.delete()
+        await message.channel.send("void cleared")
+
     if message.content.lower().startswith("hi outcast"):
         print(get_emoji_count(message.guild))
         await message.channel.send("Hiya! I'm a work in progress, don't mind me. " + get_emoji_count(message.guild))
