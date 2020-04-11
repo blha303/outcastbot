@@ -125,8 +125,11 @@ async def on_message(message):
 @client.event
 async def on_ready():
     print("Logged in as {} ({})".format(client.user.name, client.user.id))
-    await client.get_channel(697503616587792415).send("Back online. Last update: {}\n<{}>".format(check_output(["git", "log", "-1", "--pretty=%B"]).strip(),
-                                                                                                  check_output(["git", "remote", "get-url", "origin"]).strip()))
+    await client.get_channel(697503616587792415).send("Back online. Last update: {}\n<{}/commit/{}>".format(
+        check_output(["git", "log", "-1", "--pretty=%B"]).strip().decode("utf-8"),
+        check_output(["git", "remote", "get-url", "origin"]).strip().decode("utf-8"),
+        check_output(["git", "log", "-1", "--pretty=%h"]).strip().decode("utf-8")
+    ))
     if client.user.bot:
         print(discord.utils.oauth_url(client.user.id, permissions=discord.Permissions(8)))
 
